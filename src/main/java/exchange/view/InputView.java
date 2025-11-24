@@ -14,7 +14,7 @@ public class InputView {
     private static final String READ_BALANCE_MESSAGE = "사용자 잔고를 입력해 주세요.";
 
     public List<BalanceData> readBalance() {
-        printInputBalanceMessage();
+        System.out.println(READ_BALANCE_MESSAGE);
         List<BalanceData> userBalances = new ArrayList<>();
 
         while (true) {
@@ -29,10 +29,6 @@ public class InputView {
         return userBalances;
     }
 
-    private void printInputBalanceMessage() {
-        System.out.println(READ_BALANCE_MESSAGE);
-    }
-
     private boolean isEndOfInput(String line) {
         return line.trim().equals(END_OF_LINE_MESSAGE);
     }
@@ -44,5 +40,4 @@ public class InputView {
         }
         return new BalanceData(fields[0], fields[1], fields[2]);
     }
-
 }

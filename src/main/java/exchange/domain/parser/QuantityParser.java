@@ -2,9 +2,8 @@ package exchange.domain.parser;
 
 import exchange.message.ErrorMessage;
 
-public class BalanceParser extends AbstractDoubleParser {
-
-    private BalanceParser(){}
+public class QuantityParser extends AbstractDoubleParser{
+    private QuantityParser() {}
 
     @Override
     protected ErrorMessage formatErrorMessage() {
@@ -12,6 +11,6 @@ public class BalanceParser extends AbstractDoubleParser {
     }
 
     public static double parse(String rawValue) {
-        return new BalanceParser().parseRaw(rawValue);
+        return new QuantityParser().parseRaw(rawValue);
     }
 }

@@ -2,7 +2,7 @@ package exchange.domain.parser;
 
 import exchange.message.ErrorMessage;
 
-public abstract class AbstractBalanceParser {
+public abstract class AbstractDoubleParser {
 
     protected abstract ErrorMessage formatErrorMessage();
 

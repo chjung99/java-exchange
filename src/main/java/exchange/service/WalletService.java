@@ -1,5 +1,6 @@
 package exchange.service;
 
+import exchange.domain.Order;
 import exchange.domain.Wallet;
 import exchange.domain.WalletType;
 import exchange.domain.parser.BalanceParser;
@@ -16,7 +17,7 @@ public class WalletService {
 
     public WalletService(WalletRepository walletKRWRepository, WalletRepository walletBTCRepository) {
         walletRepositoryMap.put(WalletType.KRW, walletKRWRepository);
-        walletRepositoryMap.put(WalletType.BTC, walletKRWRepository);
+        walletRepositoryMap.put(WalletType.BTC, walletBTCRepository);
     }
 
     private void createWallet(String rawUserId, WalletType walletType, String rawBalance) {
@@ -35,6 +36,20 @@ public class WalletService {
 
     public void createWalletForUser(BalanceData balanceData) {
         createWallet(balanceData.rawUserId, WalletType.KRW, balanceData.rawKRWBalance);
-        createWallet(balanceData.rawUserId, WalletType.KRW, balanceData.rawBTCBalance);
+        createWallet(balanceData.rawUserId, WalletType.BTC, balanceData.rawBTCBalance);
+    }
+
+    public void updateBalance(Order incomingOrder, Order counterOrder, double tradePrice, double tradeQuantity) {
+        WalletRepository BTCwalletRepository = walletRepositoryMap.get(WalletType.BTC);
+        WalletRepository KRWwalletRepository = walletRepositoryMap.get(WalletType.KRW);
+
+        String buyerId = incomingOrder.isBuy() ? incomingOrder.getUserId(): counterOrder.getUserId();
+        String sellerId = incomingOrder.isSell() ? incomingOrder.getUserId(): counterOrder.getUserId();
+
+        BTCwalletRepository.findByUserId(sellerId).withdraw(tradeQuantity);
+        BTCwalletRepository.findByUserId(buyerId).deposit(tradeQuantity);
+
+        KRWwalletRepository.findByUserId(buyerId).withdraw(tradeQuantity * tradePrice);
+        KRWwalletRepository.findByUserId(sellerId).deposit(tradeQuantity * tradePrice);
     }
 }

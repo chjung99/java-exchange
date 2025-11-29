@@ -1,5 +1,6 @@
 package exchange.controller;
 
+import exchange.domain.Balance;
 import exchange.domain.OrderData;
 import exchange.domain.TradeResult;
 import exchange.service.OrderService;
@@ -27,6 +28,7 @@ public class ExchangeController {
     public void run() {
         enrollUserWallets();
         executeOrders();
+        showFinalBalanceSummary();
     }
 
     private void enrollUserWallets() {
@@ -41,5 +43,20 @@ public class ExchangeController {
             results.add(orderService.processOrder(orderData));
         }
         outputView.printExecutedTrade(results);
+    }
+
+    private void showFinalBalanceSummary() {
+        outputView.printBalanceSummary(getUserBalances());
+    }
+
+    private List<Balance> getUserBalances() {
+        List< Balance> userBalances = new ArrayList<>();
+
+        List<String> users = walletService.getAllUser();
+        for (String userId : users) {
+            userBalances.add(walletService.getUserBalance(userId));
+        }
+
+        return userBalances;
     }
 }

@@ -13,6 +13,8 @@ public class TradeEngine {
     }
 
     public TradeResult execute(Order incomingOrder) {
+        //todo: order 검증 로직 필요 (잔고가 없는데 주문하는 경우)
+
         if (!orderBook.hasMatch(incomingOrder)) {
             if (incomingOrder.isSell()) {
                 orderBook.addOrder(incomingOrder);

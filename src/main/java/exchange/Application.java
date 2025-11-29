@@ -2,10 +2,7 @@ package exchange;
 
 import exchange.controller.ExchangeController;
 import exchange.domain.TradeEngine;
-import exchange.repository.InMemoryOrderBook;
-import exchange.repository.InMemoryWalletBTCRepository;
-import exchange.repository.InMemoryWalletKRWRepository;
-import exchange.repository.OrderBook;
+import exchange.repository.*;
 import exchange.service.OrderService;
 import exchange.service.WalletService;
 import exchange.view.InputView;
@@ -16,7 +13,8 @@ public class Application {
         // TODO: 프로그램 구현
         InputView inputView = new InputView();
         OutputView outputView = new OutputView();
-        WalletService walletService = new WalletService(new InMemoryWalletKRWRepository(), new InMemoryWalletBTCRepository());
+        WalletService walletService = new WalletService(new InMemoryWalletKRWRepository(),
+                new InMemoryWalletBTCRepository(), new InMemoryUserRepository());
         OrderBook orderBook = new InMemoryOrderBook();
         TradeEngine tradeEngine = new TradeEngine(orderBook, walletService);
         OrderService orderService = new OrderService(tradeEngine);

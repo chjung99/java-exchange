@@ -14,7 +14,6 @@ public class TradeEngine {
 
     public TradeResult execute(Order incomingOrder) {
         //todo: order 검증 로직 필요 (잔고가 없는데 주문하는 경우)
-        validateOrder(incomingOrder);
 
         if (!orderBook.hasMatch(incomingOrder)) {
             if (incomingOrder.isSell()) {
@@ -27,6 +26,8 @@ public class TradeEngine {
         Order counterOrder = incomingOrder.isBuy() ?
                 orderBook.getBestSellOrder() :
                 orderBook.getBestBuyOrder();
+
+        validateOrder(incomingOrder, counterOrder);
 
         double tradeQuantity = Math.min(incomingOrder.getQuantity(), counterOrder.getQuantity());
         double tradePrice = counterOrder.getPrice();
@@ -45,27 +46,27 @@ public class TradeEngine {
         return new TradeResult(incomingOrder, tradeQuantity, tradePrice);
     }
 
-    private void validateOrder(Order order) {
-        if (order.isBuy()){
-            validateBuyOrder(order);
+    private void validateOrder(Order incomingOrder, Order counterOrder) {
+        if (incomingOrder.isBuy()) {
+            validateBuyOrder(incomingOrder, counterOrder);
         }
-        if (order.isSell()){
-            validateSellOrder(order);
+        if (incomingOrder.isSell()) {
+            validateSellOrder(incomingOrder);
         }
     }
 
-    private void validateSellOrder(Order order) {
-        String userId = order.getUserId();
+    private void validateSellOrder(Order incomingOrder) {
+        String userId = incomingOrder.getUserId();
         Balance userBalance = walletService.getUserBalance(userId);
-        if (userBalance.getBTCBalance() < order.getQuantity()) {
+        if (userBalance.getBTCBalance() < incomingOrder.getQuantity()) {
             throw new IllegalArgumentException("[ERROR] BTC 잔고가 부족합니다");
         }
     }
 
-    private void validateBuyOrder(Order order) {
-        String userId = order.getUserId();
+    private void validateBuyOrder(Order incomingOrder, Order counterOrder) {
+        String userId = incomingOrder.getUserId();
         Balance userBalance = walletService.getUserBalance(userId);
-        if (userBalance.getKRWBalance() < order.getQuantity()) {
+        if (userBalance.getKRWBalance() < incomingOrder.getQuantity() * counterOrder.getPrice()) {
             throw new IllegalArgumentException("[ERROR] KRW 잔고가 부족합니다");
         }
     }

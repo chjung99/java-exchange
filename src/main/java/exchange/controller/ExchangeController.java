@@ -11,6 +11,7 @@ import exchange.view.OutputView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 public class ExchangeController {
     private final InputView inputView;
@@ -38,10 +39,21 @@ public class ExchangeController {
     }
 
     private void executeOrders() {
-        List<TradeResult> results = new ArrayList<>();
+        List<Future<TradeResult>> futures = new ArrayList<>();
+
         for (OrderData orderData : inputView.readOrder()) {
-            results.add(orderService.processOrder(orderData));
+            futures.add(orderService.processOrderAsync(orderData));
         }
+
+        List<TradeResult> results = futures.stream()
+                .map(f -> {
+                    try {
+                        return f.get();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+
         outputView.printExecutedTrade(results);
     }
 

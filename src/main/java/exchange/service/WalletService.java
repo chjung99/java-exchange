@@ -9,11 +9,13 @@ import exchange.repository.WalletRepository;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class WalletService {
 
     private final Map<WalletType, WalletRepository> walletRepositoryMap = new EnumMap<>(WalletType.class);
     private final UserRepository userRepository;
+    private final ReentrantLock walletLock = new ReentrantLock();
 
     public WalletService(WalletRepository walletKRWRepository, WalletRepository walletBTCRepository, UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -43,17 +45,23 @@ public class WalletService {
     }
 
     public void updateBalance(Order incomingOrder, Order counterOrder, double tradePrice, double tradeQuantity) {
-        WalletRepository BTCwalletRepository = walletRepositoryMap.get(WalletType.BTC);
-        WalletRepository KRWwalletRepository = walletRepositoryMap.get(WalletType.KRW);
+        walletLock.lock();
+        try{
+            WalletRepository BTCwalletRepository = walletRepositoryMap.get(WalletType.BTC);
+            WalletRepository KRWwalletRepository = walletRepositoryMap.get(WalletType.KRW);
 
-        String buyerId = incomingOrder.isBuy() ? incomingOrder.getUserId() : counterOrder.getUserId();
-        String sellerId = incomingOrder.isSell() ? incomingOrder.getUserId() : counterOrder.getUserId();
+            String buyerId = incomingOrder.isBuy() ? incomingOrder.getUserId() : counterOrder.getUserId();
+            String sellerId = incomingOrder.isSell() ? incomingOrder.getUserId() : counterOrder.getUserId();
 
-        BTCwalletRepository.findByUserId(sellerId).withdraw(tradeQuantity);
-        BTCwalletRepository.findByUserId(buyerId).deposit(tradeQuantity);
+            BTCwalletRepository.findByUserId(sellerId).withdraw(tradeQuantity);
+            BTCwalletRepository.findByUserId(buyerId).deposit(tradeQuantity);
 
-        KRWwalletRepository.findByUserId(buyerId).withdraw(tradeQuantity * tradePrice);
-        KRWwalletRepository.findByUserId(sellerId).deposit(tradeQuantity * tradePrice);
+            KRWwalletRepository.findByUserId(buyerId).withdraw(tradeQuantity * tradePrice);
+            KRWwalletRepository.findByUserId(sellerId).deposit(tradeQuantity * tradePrice);
+        } finally {
+            walletLock.unlock();
+        }
+
     }
 
     public Balance getUserBalance(String userId) {

@@ -2,6 +2,8 @@ package exchange.repository;
 
 import exchange.domain.Order;
 
+import java.util.List;
+
 public interface OrderBook {
     public void addOrder(Order order);
 
@@ -11,4 +13,6 @@ public interface OrderBook {
     public void removeIfFullyExecuted(Order order);
 
     public boolean hasMatch(Order incomingOrder);
+
+    public List<Order> getAllOrders();
 }

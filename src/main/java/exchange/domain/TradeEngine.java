@@ -14,6 +14,7 @@ public class TradeEngine {
 
     public TradeResult execute(Order incomingOrder) {
         //todo: order 검증 로직 필요 (잔고가 없는데 주문하는 경우)
+        validateOrder(incomingOrder);
 
         if (!orderBook.hasMatch(incomingOrder)) {
             if (incomingOrder.isSell()) {
@@ -42,5 +43,30 @@ public class TradeEngine {
         }
 
         return new TradeResult(incomingOrder, tradeQuantity, tradePrice);
+    }
+
+    private void validateOrder(Order order) {
+        if (order.isBuy()){
+            validateBuyOrder(order);
+        }
+        if (order.isSell()){
+            validateSellOrder(order);
+        }
+    }
+
+    private void validateSellOrder(Order order) {
+        String userId = order.getUserId();
+        Balance userBalance = walletService.getUserBalance(userId);
+        if (userBalance.getBTCBalance() < order.getQuantity()) {
+            throw new IllegalArgumentException("[ERROR] BTC 잔고가 부족합니다");
+        }
+    }
+
+    private void validateBuyOrder(Order order) {
+        String userId = order.getUserId();
+        Balance userBalance = walletService.getUserBalance(userId);
+        if (userBalance.getKRWBalance() < order.getQuantity()) {
+            throw new IllegalArgumentException("[ERROR] KRW 잔고가 부족합니다");
+        }
     }
 }
